@@ -1,0 +1,396 @@
+package tetris_game;
+
+import java.io.IOException;
+import java.util.*;
+
+public class Tetris{
+	
+	public static boolean gameOver=false;
+	public static int score=0;
+	public static String shapes[] = {"S","L","T","SQ","Z","ML","I"};
+
+  
+    static int generateRandomNumber() {
+        int num = new Random().nextInt(7);
+          return num;
+    }
+    
+    public static void main(String[] args) throws InterruptedException, IOException {
+
+    	new Tetris();
+    	
+        // Module 1 : create row- 18x col-10 Matrix
+        char board[][] = new char[18][10];
+        Function.initBoard(board);
+        Function.printBoard(board);
+        
+   
+        while(!gameOver)
+        {
+        	 String ch = shapes[generateRandomNumber()];
+             char[][] shapeBLOCK = Shape.getShape(ch);
+  
+            clearScreen();
+            PlayTheGame play = new PlayTheGame(board,shapeBLOCK,score);
+            if(play.gameOver())
+            {
+                System.out.println("GAME OVER !!\n"+"Achieved Score is : "+score);
+                gameOver=true;
+                
+                break;
+            }
+                    
+            play.start();  
+            //score += Function.calculateScore(board,score);
+       
+            Function.printBoard(board);
+            
+            
+            
+        }
+        
+        
+    }
+	private static void clearScreen() throws InterruptedException, IOException {
+		
+		new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+		
+	}
+}
+
+
+
+/***********
+ * Function
+ */
+
+class Function {
+	
+	 static void printBoard(char board[][])
+	    {
+	        for(int row=0;row<board.length;row++)
+	        {
+	            for(int col=0;col<board[0].length;col++)
+	            {
+	                System.out.print(board[row][col]+" ");
+	            }
+	            System.out.println();
+	        }
+	    }
+	 
+	    static void initBoard(char board[][])
+	    {
+	        for(int row=0;row<board.length;row++)
+	        {
+	            for(int col=0;col<board[0].length;col++)
+	            {
+	                if(row==0 || row==board.length-1 || col==0 || col==board[0].length-1)
+	                {
+	                	board[row][col] = '#';
+	                }
+	                else
+	                {
+	                	board[row][col]=' ';
+	                }
+	            }
+	        }
+	    }
+	    public static void draw( char[][] board,char[][] shapeBLOCK,int startRowPos,int startColPos) {
+	        //put the shapeBox in board
+	        for(int row=0;row<shapeBLOCK.length;row++)
+	        {
+	            for(int col=0;col<shapeBLOCK[0].length;col++)
+	            {
+	                if(shapeBLOCK[row][col]!=' ') {
+	                // if this condition is not given , then it also replaces 
+	                // space in the board . check spawnConditionReason picture
+	                	board[startRowPos+row][startColPos+col] = shapeBLOCK[row][col];
+	                }
+	            }
+	        }
+	    }
+
+	    public static void reset( char[][] board,char[][] shapeBLOCK, int startRowPos,int startColPos) {
+	        //fillUp shape in board
+	        for(int row=0;row<shapeBLOCK.length;row++)
+	        {
+	            for(int col=0;col<shapeBLOCK[0].length;col++)
+	            {
+	                if(shapeBLOCK[row][col]!=' ')
+	                {
+	                	board[startRowPos+row][startColPos+col] = ' ';
+	                }
+	            }
+	        }
+	    }
+	    public static int calculateScore(char[][] board, int score) {
+	        int sc=0;
+	        // check for rows filled to increase score and eliminate the row
+	        // fill all the above *s to the below...
+	        for(int row=board.length-2;row>1;row--)
+	        {
+	            // checking from bottom..
+	            boolean toBeRemoved = true;
+	            for(int col=1;col<board[0].length-1;col++)
+	            {
+	                if(board[row][col]!='#')
+	                {
+	                    toBeRemoved = false;
+	                    break;
+	                }
+	            }
+	            // if all the column has * then , the score need to updated and 
+	            // the row has to eliminate and all the above element need to brought below
+	            if(toBeRemoved)
+	            {
+	                sc=100;
+	                for(int selectedRow = row;selectedRow>1;selectedRow--)
+	                {
+	                    for(int col=1;col<board[0].length-1;col++)
+	                    {
+	                        // replaces the above value to below
+	                    	board[selectedRow][col] = board[selectedRow-1][col];
+	                    }
+	                }
+	            }
+	        }
+	        return sc;
+	    }
+	
+
+}
+
+/****
+ * Function End
+ */
+
+
+/*
+
+Shape 
+
+*/
+
+class Shape {
+	
+	 // module 2 . can be extended easily to add many more shapes..
+   static  char s[][]={{' ','#','#'},
+		               {'#','#',' '}
+                       };
+   static char l[][] = {{'#',' '},
+		                {'#',' '},
+		                {'#','#'}
+		                };
+   static char t[][] = {{'#','#','#'},
+		                {' ','#',' '}
+                        };
+   static char sq[][] = {{'#','#'},
+		                 {'#','#'}
+                         };
+   static char z[][]={{'#','#',' '},
+		              {' ','#','#'}
+                     };
+   static char ml[][] = {{' ','#'},
+		                 {' ','#'},
+		                 {'#','#'}
+		                 };
+   static char i[][] = {{'#'},
+		                {'#'},
+		                {'#'}
+		                };
+
+   static char[][] getShape(String ch)
+   {
+       switch(ch)
+       {
+           case "S":return s;
+           case "L":return l;
+           case "T":return t;
+           case "SQ":return sq;
+           case "Z":return z;
+           case "ML":return ml;
+           case "I":return i;
+       }
+       return null;
+   }
+
+}
+
+
+/***
+ * Shape End
+ */
+
+
+/*****
+ * Option
+ * 
+ * 
+ */
+
+
+class Options {
+
+	 // module 3 and 4
+   static char[][] rotateLeft(char[][] shape)
+   {
+       // just take last column make it as first row and so on..
+       char rotated[][] = new char[shape[0].length][shape.length];
+       for(int col=shape[0].length-1;col>=0;col--)
+       {   // 1 
+           for(int row=0;row<shape.length;row++)
+           {
+               // 0 1 2
+               // 0 1 , 1 1 , 2 1 , 0 0 , 1 0 , 2 0 ==> 0 0 , 0 1 , 0 2 , 1 0 , 1 1 , 1 2
+               rotated[shape[0].length-col-1][row] = shape[row][col];
+           }
+       }
+      return rotated;
+   }
+   static char[][] rotateRight(char[][] shape)
+   {
+       // just take last row make it as first column as straight and so on..
+       char 
+       rotated[][] = new char[shape[0].length][shape.length];
+       for(int row=shape.length-1;row>=0;row--)
+       { 
+           for(int col=0;col<shape[0].length;col++)
+           {
+               rotated[col][shape.length-row-1] = shape[row][col];
+           }
+       }
+       return rotated;
+   }
+   
+   public static void drawUpdate(char[][] board, char[][] shape,  int startRowPos, int startColPos) {
+       Function.draw(board,shape,  startRowPos, startColPos);
+   }
+   
+}
+
+/*****
+ * Option End
+ */
+
+
+/***Play the Game Start*/
+
+
+class PlayTheGame {
+    char[][] shape = null;
+    char[][] board = null;
+    int startRowPos;
+    int startColPos;
+    int score=0;
+  
+
+    PlayTheGame(char[][] board,char[][] shape,int score)
+    {
+        this.shape = shape;
+        this.startRowPos=1;
+        this.startColPos = board[0].length/2-1;
+        this.board = board;
+        this.score=score;        
+     
+    }
+
+    public boolean gameOver()
+    {
+        // if the incoming shape is not able to fit in the board grid means the game got end.
+        for(int row=0;row<shape.length;row++)
+        {
+            for(int col=0;col<shape[0].length;col++)
+            {
+                if(shape[row][col]=='#' && board[startRowPos+row][startColPos+col]=='#')
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void start() {  
+
+        Function.draw(board,shape,startRowPos,startColPos); 
+        Function.printBoard(board);
+        Scanner sc= new Scanner(System.in);
+
+        while(isValidDownMove())  // runs until the shape hits the bottom floor
+        {
+        	System.out.println("Current Score : "+score);
+        	System.out.println("-------------------");
+            System.out.println("1. Rotate [Q] LEFT, [E] Right  ");
+            System.out.println("----------------------");
+            System.out.println("2. Move [A] -LEFT , [S] - DOWN , [D] - Right ");
+            System.out.println("-------------------");
+            System.out.println("Enter Choice:");
+            String option = sc.nextLine();
+            
+            if(!option.equals("")) {
+            	
+            	switch(option.charAt(0)) {
+            	
+                case 'a':
+                        if(!(startColPos-1>0)) {
+                            System.out.println("cant able to move left further. ");
+                            break;
+                        }
+                        // reseting the board to ' ' and after moving the shapeBox
+                        Function.reset(board,shape,startRowPos,startColPos);
+                        startColPos--;
+                        Options.drawUpdate(board,shape,startRowPos,startColPos);
+                        break;
+                case 's':
+                        Function.reset(board,shape,startRowPos,startColPos);
+                        startRowPos++;
+                        Options.drawUpdate(board,shape,startRowPos,startColPos);
+                        // after moving down the isValidDownMove handles this case.
+                        break;
+                case 'd':
+                        if(startColPos+shape[0].length+1 >= board[0].length) {
+                            System.out.println("cant able to move right further. ");
+                            break;
+                        }
+                        Function.reset(board,shape,startRowPos,startColPos);
+                        startColPos++;
+                        Options.drawUpdate(board,shape,startRowPos,startColPos);
+                        break;
+                case 'e':
+                        Function.reset(board,shape,startRowPos,startColPos);
+                        shape = Options.rotateRight(shape);
+                        Options.drawUpdate(board,shape,startRowPos,startColPos);
+                        break;
+                case 'q':
+                        Function.reset(board,shape,startRowPos,startColPos);
+                        shape = Options.rotateLeft(shape);
+                        Options.drawUpdate(board,shape,startRowPos,startColPos);
+                        break;
+                
+                
+            }
+            	
+            }
+            
+            
+            Function.printBoard(board);
+            
+        }
+        
+    }
+
+    private boolean isValidDownMove() {
+        int shapeRowLen = shape.length-1;
+        for(int col=0;col<shape[0].length;col++)
+        {
+            if(shape[shapeRowLen][col]=='#' && board[startRowPos+shapeRowLen+1][col+startColPos]=='#')
+            {
+                // thus reached a boundary
+            //    System.out.println(shapeRowLen+" "+(startRowPos+shapeRowLen)+" "+col+startColPos+" "+startRowPos);
+                return false;
+            }
+        }
+        return true;
+    }
+
+}
